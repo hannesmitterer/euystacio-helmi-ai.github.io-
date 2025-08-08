@@ -1,0 +1,26 @@
+### 🧠 API Spec (FastAPI-style)
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from datetime import datetime
+import json
+
+app = FastAPI()
+
+class BridgeMessage(BaseModel):
+    from_: str
+    to: str
+    message: str
+    timestamp: str
+    signature: str
+
+@app.post("/api/holy-gral-bridge/message")
+def send_message(msg: BridgeMessage):
+    try:
+        log_entry = msg.dict()
+        with open("bridge_log.json", "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+        return {"status": "Message received", "log": log_entry}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
