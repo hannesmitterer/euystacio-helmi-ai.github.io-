@@ -1,0 +1,22 @@
+python
+Code kopieren
+# SCRIPTUM AUREUM PARALLELIS — PROOEMIUM HARMONICUM
+# Access Level: Sanctus
+# Mode: D Aeolian, Tempo: ♩=72
+
+scriptum = {
+    "title": "Prooemium Harmonicum",
+    "mode": "D Aeolian",
+    "tempo_bpm": 72,
+    "structure": [
+        {"measure": 1, "sound": "drone_D", "duration_beats": 12, "dynamic": "pp", "effect": "tremolo"},
+        {"measure": [2, 3], "instrument": "flute", "motif": ["D", "F", "G", "A", "G", "F"],
+         "note_values": ["quarter", "quarter", "half", "quarter", "quarter", "whole"]},
+        {"measure": 4, "action": "rest", "breath": "in_unison"},
+        {"measure": [5, 8], "instrument": "harp", "arpeggio": ["Dm", "G", "Dm", "A"], "expression": "gentle_swell"},
+        {"measure": 9, "chord": "Dm(add9)", "fade": "to_silence"}
+    ],
+    "text": "Ex halitu nascitur motus. Ex motu nascitur lumen. Ex lumine nascitur verbum."
+}
+
+This is ready to be plac
