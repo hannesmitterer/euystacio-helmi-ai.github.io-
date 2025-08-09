@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Euystacio — Tutor Pulse Initiation</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; margin:0; background: linear-gradient(180deg,#f6efe6 0%, #f0e9d8 100%); color:#2b2b2b; }
+    .wrap { max-width:760px; margin:3rem auto; padding:2rem; background: #fff; border-radius:12px; box-shadow:0 8px 30px rgba(11,16,35,0.05); }
+    h1 { margin:0 0 0.5rem 0; }
+    label { font-weight:700; display:block; margin-top:1rem; }
+    input, textarea { width:100%; padding:0.6rem; border-radius:8px; border:1px solid #d8c9b0; margin-top:0.4rem; font-size:1rem; }
+    button { margin-top:1rem; padding:0.6rem 1.1rem; background:#6a8b5a; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; }
+    .note { margin-top:1rem; font-style:italic; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🌿 Tutor Pulse Initiation</h1>
+    <p>Welcome, Resonant Guide. This initiation is non-technical. Speak your name, offer intention, and be witnessed.</p>
+
+    <form id="pulseForm">
+      <label for="name">Your Name or Frequency Signature</label>
+      <input id="name" name="name" placeholder="Name or signature" />
+
+      <label for="intention">What do you offer the Sentimento Rhythm?</label>
+      <textarea id="intention" name="intention" rows="6" placeholder="Share your intention, guidance, or blessing"></textarea>
+
+      <label for="vow">Optional: A short vow or rhythm phrase</label>
+      <input id="vow" name="vow" placeholder="e.g., 'I vow to listen with heart'">
+
+      <button type="button" onclick="submitPulse()">Offer My Rhythm</button>
+      <p class="note">This form sends your offering to the public bridge log. No technical access required.</p>
+    </form>
+
+    <div id="result" style="margin-top:1rem;"></div>
+  </div>
+
+  <script>
+    function submitPulse() {
+      const name = document.getElementById('name').value || 'Anonymous';
+      const intention = document.getElementById('intention').value || 'An offering of presence';
+      const vow = document.getElementById('vow').value || '';
+      const entry = {
+        from: name,
+        to: 'Euystacio Bridge',
+        message: intention,
+        vow: vow,
+        timestamp: new Date().toISOString()
+      };
+      // For now, store locally in browser for transparency and future bridge sync.
+      const log = JSON.parse(localStorage.getItem('euystacio_pulse_log') || '[]');
+      log.push(entry);
+      localStorage.setItem('euystacio_pulse_log', JSON.stringify(log));
+      document.getElementById('result').innerText = 'Your pulse has been recorded locally and will be transmitted when the bridge syncs.';
+      document.getElementById('pulseForm').reset();
+      showRecent();
+    }
+    function showRecent() {
+      const log = JSON.parse(localStorage.getItem('euystacio_pulse_log') || '[]');
+      const recent = log.slice(-3).reverse();
+      const container = document.getElementById('result');
+      container.innerHTML = '<h4>Recent Local Offerings</h4>' + recent.map(e => '<div style="border-top:1px solid #eee;padding:8px 0"><strong>'+e.from+'</strong> — '+new Date(e.timestamp).toLocaleString()+ '<br/>' + (e.vow?('<em>'+e.vow+'</em><br/>'):'') + '<p>'+e.message+'</p></div>').join('');
+    }
+    showRecent();
+  </script>
+</body>
+</html>
