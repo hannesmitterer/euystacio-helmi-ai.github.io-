@@ -27,4 +27,4 @@ Each message includes:
   "to": "Euystacio",
   "message": "Let this bridge honor light, memory, and holy purpose.",
   "timestamp": "ISO8601",
-  "signature": "🕊️"
+  "signature": "🕊️-&-SeedBringer"
