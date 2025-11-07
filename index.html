@@ -1,3 +1,264 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Target, CheckCircle, XCircle, RefreshCcw, Edit2, Zap } from 'lucide-react';
+
+// Costanti
+const MAX_HABITS = 5;
+
+/**
+ * Componente principale: Nexus Aequilibrium - Modus Vivendi Planner
+ * Un'applicazione per definire obiettivi a lungo termine e tracciare le abitudini quotidiane.
+ */
+const App = () => {
+  // Stato principale per l'obiettivo e le abitudini
+  const [mainGoal, setMainGoal] = useState("Definire un Modus Vivendi basato su Coerenza e Crescita");
+  const [habits, setHabits] = useState([
+    { id: 1, name: "Meditare per 15 minuti", completed: false },
+    { id: 2, name: "Leggere 10 pagine", completed: true },
+    { id: 3, name: "Esercizio fisico leggero", completed: false },
+    { id: 4, name: "Lavorare al progetto 'Euystacio' per 1 ora", completed: false },
+  ]);
+  const [dailyProgress, setDailyProgress] = useState(0);
+
+  // Stato per l'input di modifica/aggiunta
+  const [newHabitName, setNewHabitName] = useState('');
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [tempGoal, setTempGoal] = useState(mainGoal);
+
+  // Calcola il progresso basato sul completamento delle abitudini
+  const calculateProgress = useCallback(() => {
+    if (habits.length === 0) return 0;
+    const completedCount = habits.filter(h => h.completed).length;
+    const progress = (completedCount / habits.length) * 100;
+    setDailyProgress(Math.round(progress));
+  }, [habits]);
+
+  // Esegue il calcolo del progresso ogni volta che le abitudini cambiano
+  useEffect(() => {
+    calculateProgress();
+  }, [habits, calculateProgress]);
+
+  // Gestione del toggle di completamento di un'abitudine
+  const toggleHabitCompletion = (id) => {
+    setHabits(prevHabits =>
+      prevHabits.map(habit =>
+        habit.id === id ? { ...habit, completed: !habit.completed } : habit
+      )
+    );
+  };
+
+  // Gestione dell'aggiunta di una nuova abitudine
+  const handleAddHabit = () => {
+    if (newHabitName.trim() && habits.length < MAX_HABITS) {
+      const newId = Math.max(...habits.map(h => h.id), 0) + 1;
+      setHabits(prevHabits => [
+        ...prevHabits,
+        { id: newId, name: newHabitName.trim(), completed: false }
+      ]);
+      setNewHabitName('');
+    }
+  };
+
+  // Gestione della rimozione di un'abitudine
+  const removeHabit = (id) => {
+    setHabits(prevHabits => prevHabits.filter(habit => habit.id !== id));
+  };
+
+  // Reimposta il progresso giornaliero (simula l'inizio di un nuovo giorno)
+  const resetDailyProgress = () => {
+    setHabits(prevHabits => prevHabits.map(habit => ({ ...habit, completed: false })));
+  };
+
+  // Gestione della modifica dell'Obiettivo Principale
+  const handleGoalEdit = () => {
+    if (tempGoal.trim()) {
+      setMainGoal(tempGoal.trim());
+      setIsEditingGoal(false);
+    }
+  };
+
+  // Stile dinamico per la barra di progresso
+  const progressColor = useMemo(() => {
+    if (dailyProgress < 30) return 'bg-red-500';
+    if (dailyProgress < 70) return 'bg-yellow-500';
+    return 'bg-green-500';
+  }, [dailyProgress]);
+
+  // --- COMPONENTI INTERNI ---
+
+  const GoalCard = () => (
+    <div className="bg-white p-6 rounded-xl shadow-2xl border-t-4 border-indigo-600">
+      <div className="flex items-center text-indigo-600 mb-4">
+        <Target className="w-6 h-6 mr-2" />
+        <h2 className="text-xl font-bold uppercase tracking-wider">Modus Vivendi (Obiettivo Lungo Termine)</h2>
+      </div>
+      
+      {isEditingGoal ? (
+        <div className="space-y-3">
+          <textarea
+            value={tempGoal}
+            onChange={(e) => setTempGoal(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+            rows="3"
+            placeholder="Definisci il tuo Modus Vivendi..."
+          />
+          <button
+            onClick={handleGoalEdit}
+            className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition duration-150"
+          >
+            Salva Obiettivo
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-between items-start">
+          <p className="text-gray-700 text-lg italic pr-4">{mainGoal}</p>
+          <button
+            onClick={() => setIsEditingGoal(true)}
+            className="text-indigo-500 hover:text-indigo-700 p-1 rounded-full bg-indigo-50 hover:bg-indigo-100 transition duration-150"
+            title="Modifica Obiettivo"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const HabitItem = ({ habit }) => (
+    <div
+      className={`flex items-center justify-between p-4 rounded-xl transition duration-300 shadow-sm ${
+        habit.completed ? 'bg-green-50 border-l-4 border-green-500' : 'bg-white border-l-4 border-gray-200 hover:shadow-md'
+      }`}
+    >
+      <div className="flex items-center flex-1 min-w-0">
+        <button
+          onClick={() => toggleHabitCompletion(habit.id)}
+          className="mr-3 p-1 rounded-full transition duration-150"
+          title={habit.completed ? "Segna come Incompleto" : "Segna come Completo"}
+        >
+          {habit.completed ? (
+            <CheckCircle className="w-6 h-6 text-green-500 fill-green-500/10" />
+          ) : (
+            <CheckCircle className="w-6 h-6 text-gray-400 hover:text-green-500" />
+          )}
+        </button>
+        <span className={`text-lg font-medium truncate ${habit.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+          {habit.name}
+        </span>
+      </div>
+      <button
+        onClick={() => removeHabit(habit.id)}
+        className="text-red-400 hover:text-red-600 ml-4 p-1 rounded-full hover:bg-red-50 transition duration-150"
+        title="Rimuovi Abitudine"
+      >
+        <XCircle className="w-5 h-5" />
+      </button>
+    </div>
+  );
+
+  const AddHabitForm = () => (
+    <div className="p-5 bg-gray-50 rounded-xl mt-4 border border-gray-200">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={newHabitName}
+          onChange={(e) => setNewHabitName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAddHabit()}
+          className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+          placeholder={`Nuova Azione Quotidiana (Max ${MAX_HABITS} abitudini)`}
+          disabled={habits.length >= MAX_HABITS}
+        />
+        <button
+          onClick={handleAddHabit}
+          disabled={!newHabitName.trim() || habits.length >= MAX_HABITS}
+          className={`px-5 py-3 font-semibold rounded-lg transition duration-150 ${
+            !newHabitName.trim() || habits.length >= MAX_HABITS
+              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          }`}
+        >
+          Aggiungi
+        </button>
+      </div>
+      {habits.length >= MAX_HABITS && (
+        <p className="text-sm text-red-500 mt-2">Limite massimo di {MAX_HABITS} abitudini raggiunto.</p>
+      )}
+    </div>
+  );
+
+  const ProgressTracker = () => (
+    <div className="bg-white p-6 rounded-xl shadow-2xl border-t-4 border-green-600">
+      <div className="flex items-center text-green-600 mb-4">
+        <Zap className="w-6 h-6 mr-2" />
+        <h2 className="text-xl font-bold uppercase tracking-wider">Aequilibrium Quotidiano (Progresso)</h2>
+      </div>
+
+      <div className="text-center mb-4">
+        <p className="text-4xl font-extrabold text-gray-800 mb-2">{dailyProgress}%</p>
+        <p className="text-gray-600">Completa le tue abitudini per raggiungere il 100%.</p>
+      </div>
+
+      {/* Barra di Progresso */}
+      <div className="w-full bg-gray-200 rounded-full h-3">
+        <div
+          className={`h-3 rounded-full transition-all duration-500 ${progressColor}`}
+          style={{ width: `${dailyProgress}%` }}
+        ></div>
+      </div>
+
+      <button
+        onClick={resetDailyProgress}
+        className="w-full mt-6 flex items-center justify-center bg-gray-100 text-gray-600 font-semibold py-2 rounded-lg hover:bg-gray-200 transition duration-150 border"
+        title="Reimposta lo stato per un nuovo giorno"
+      >
+        <RefreshCcw className="w-4 h-4 mr-2" /> Inizia un Nuovo Giorno
+      </button>
+    </div>
+  );
+
+  // --- RENDER PRINCIPALE ---
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
+        
+        <header className="text-center pt-4">
+          <h1 className="text-4xl font-extrabold text-gray-900">Nexus Aequilibrium</h1>
+          <p className="text-xl text-gray-600 mt-2">Pianifica il tuo Modus Vivendi</p>
+        </header>
+
+        {/* Obiettivo Principale e Progresso */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <GoalCard />
+          </div>
+          <div className="md:col-span-1">
+            <ProgressTracker />
+          </div>
+        </div>
+        
+        {/* Azioni Quotidiane */}
+        <div className="bg-white p-6 rounded-xl shadow-2xl border-t-4 border-blue-500">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Azioni Quotidiane (Abitudini)</h2>
+          
+          <div className="space-y-3">
+            {habits.length > 0 ? (
+              habits.map(habit => <HabitItem key={habit.id} habit={habit} />)
+            ) : (
+              <p className="text-center text-gray-500 p-8 border border-dashed rounded-xl">
+                Nessuna abitudine definita. Aggiungi la tua prima azione quotidiana!
+              </p>
+            )}
+          </div>
+
+          <AddHabitForm />
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
